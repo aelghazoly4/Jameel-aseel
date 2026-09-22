@@ -1,0 +1,9 @@
+{
+  "name": "rsvp-invitation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "موقع دعوة الفرح مع RSVP form متصل بـ MongoDB وadmin dashboard",
+  "dependencies": {
+    "mongodb": "^6.10.0"
+  }
+}

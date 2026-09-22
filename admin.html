@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم RSVP</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#c9ad7a; --gold-dark:#866739; --cream:#fffaf2; --cream2:#f9e6d4;
+    --text:#4a3624; --text2:#8a6a3f; --border:#efd9b8; --danger:#a34a3f; --ok:#5a7a4a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--cream2);
+    font-family:'EB Garamond', serif; color:var(--text);
+  }
+  .topbar{
+    background:linear-gradient(135deg,var(--gold),var(--gold-dark));
+    color:var(--cream); padding:22px 28px; display:flex; align-items:center;
+    justify-content:space-between; flex-wrap:wrap; gap:12px;
+    box-shadow:0 6px 18px rgba(74,59,40,0.2);
+  }
+  .topbar h1{
+    font-family:'Amiri', serif; font-size:24px; margin:0; letter-spacing:1px;
+  }
+  .topbar .sub{font-size:14px; opacity:.9; margin-top:2px;}
+  .topbar-actions{display:flex; gap:10px; align-items:center;}
+  .btn{
+    border:none; border-radius:8px; padding:10px 18px; font-family:'EB Garamond', serif;
+    font-size:15px; cursor:pointer; transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-light{background:var(--cream); color:var(--gold-dark);}
+  .btn-outline{background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,0.6);}
+
+  .container{max-width:960px; margin:0 auto; padding:30px 20px 60px;}
+
+  /* شاشة الدخول */
+  #loginScreen{
+    max-width:420px; margin:70px auto; background:var(--cream); border:1px solid var(--border);
+    border-radius:16px; padding:40px 34px; text-align:center; box-shadow:0 16px 34px rgba(74,59,40,0.14);
+  }
+  #loginScreen .flourish{color:var(--gold); font-size:30px; display:block; margin-bottom:8px;}
+  #loginScreen h2{font-family:'Amiri', serif; margin:0 0 6px; font-size:26px;}
+  #loginScreen p{color:var(--text2); font-size:15px; margin:0 0 24px;}
+  #loginScreen input{
+    width:100%; padding:13px 15px; border:1px solid var(--border); border-radius:10px;
+    font-size:16px; font-family:'EB Garamond', serif; outline:none; margin-bottom:14px;
+  }
+  #loginScreen input:focus{border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,173,122,.18);}
+  #loginScreen .btn{width:100%; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:var(--cream); font-size:16px; letter-spacing:1px;}
+  #loginError{color:var(--danger); font-size:14px; min-height:18px; margin-top:10px;}
+
+  /* ملخص */
+  .stats{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:26px;}
+  .stat-card{
+    flex:1; min-width:160px; background:var(--cream); border:1px solid var(--border);
+    border-radius:14px; padding:20px 22px; text-align:center; box-shadow:0 8px 20px rgba(74,59,40,0.08);
+  }
+  .stat-card .num{font-family:'Amiri', serif; font-size:32px; font-weight:700; color:var(--gold-dark);}
+  .stat-card .label{font-size:14px; color:var(--text2); margin-top:4px;}
+
+  .toolbar{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:20px;}
+  .toolbar input[type="search"]{
+    flex:1; min-width:200px; padding:11px 15px; border:1px solid var(--border);
+    border-radius:10px; font-family:'EB Garamond', serif; font-size:15px; outline:none;
+  }
+  .toolbar input[type="search"]:focus{border-color:var(--gold);}
+
+  .empty, .loading{
+    text-align:center; padding:60px 20px; color:var(--text2); font-size:16px;
+  }
+  .empty .flourish, .loading .flourish{color:var(--gold); font-size:28px; display:block; margin-bottom:10px;}
+
+  .cards{display:flex; flex-direction:column; gap:14px;}
+  .rsvp-card{
+    background:var(--cream); border:1px solid var(--border); border-radius:14px;
+    padding:20px 24px; box-shadow:0 8px 20px rgba(74,59,40,0.06);
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .rsvp-card-top{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;}
+  .rsvp-name{font-family:'Amiri', serif; font-weight:700; font-size:19px; color:var(--text);}
+  .rsvp-date{font-size:13px; color:var(--text2); white-space:nowrap;}
+  .rsvp-message{font-size:16px; line-height:1.7; color:#5b4630;}
+  .rsvp-message.empty-msg{color:#b4a487; font-style:italic;}
+
+  footer{text-align:center; padding:20px; color:var(--text2); font-size:13px;}
+
+  @media (max-width:600px){
+    .topbar{padding:18px 18px;}
+    .container{padding:22px 14px 40px;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- شاشة تسجيل الدخول -->
+  <div id="loginScreen">
+    <span class="flourish">❦</span>
+    <h2>لوحة تحكم RSVP</h2>
+    <p>ادخل كلمة السر لعرض رسائل التهنئة</p>
+    <input type="password" id="passwordInput" placeholder="كلمة السر" autocomplete="off">
+    <button class="btn" id="loginBtn">دخول</button>
+    <div id="loginError"></div>
+  </div>
+
+  <!-- لوحة التحكم -->
+  <div id="dashboard" style="display:none;">
+    <div class="topbar">
+      <div>
+        <h1>رسائل الحضور والتهنئة</h1>
+        <div class="sub" id="lastUpdated"></div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-light" id="refreshBtn">تحديث</button>
+        <button class="btn btn-light" id="exportBtn">تصدير CSV</button>
+        <button class="btn btn-outline" id="logoutBtn">خروج</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="stats">
+        <div class="stat-card">
+          <div class="num" id="totalCount">0</div>
+          <div class="label">إجمالي التأكيدات</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="withMsgCount">0</div>
+          <div class="label">رسائل تهنئة مكتوبة</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="search" id="searchInput" placeholder="ابحث بالاسم أو نص الرسالة...">
+      </div>
+
+      <div id="listArea">
+        <div class="loading"><span class="flourish">❦</span>جارٍ التحميل...</div>
+      </div>
+    </div>
+
+    <footer>لوحة تحكم خاصة — لا تشارك هذا الرابط أو كلمة السر مع أحد</footer>
+  </div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'rsvp_admin_pw';
+  var allItems = [];
+
+  var loginScreen = document.getElementById('loginScreen');
+  var dashboard = document.getElementById('dashboard');
+  var passwordInput = document.getElementById('passwordInput');
+  var loginBtn = document.getElementById('loginBtn');
+  var loginError = document.getElementById('loginError');
+  var listArea = document.getElementById('listArea');
+  var totalCount = document.getElementById('totalCount');
+  var withMsgCount = document.getElementById('withMsgCount');
+  var lastUpdated = document.getElementById('lastUpdated');
+  var searchInput = document.getElementById('searchInput');
+
+  function getPassword(){ return sessionStorage.getItem(STORAGE_KEY) || ''; }
+  function setPassword(pw){ sessionStorage.setItem(STORAGE_KEY, pw); }
+  function clearPassword(){ sessionStorage.removeItem(STORAGE_KEY); }
+
+  function fmtDate(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleString('ar-EG', { dateStyle:'medium', timeStyle:'short' });
+    }catch(e){ return iso; }
+  }
+
+  function escapeHtml(str){
+    return (str || '').replace(/[&<>"']/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+
+  function render(items){
+    allItems = items;
+    totalCount.textContent = items.length;
+    withMsgCount.textContent = items.filter(function(i){ return i.message && i.message.trim(); }).length;
+    lastUpdated.textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-EG');
+    applyFilter();
+  }
+
+  function applyFilter(){
+    var q = (searchInput.value || '').trim().toLowerCase();
+    var filtered = allItems.filter(function(i){
+      if (!q) return true;
+      return (i.name || '').toLowerCase().indexOf(q) !== -1 ||
+             (i.message || '').toLowerCase().indexOf(q) !== -1;
+    });
+
+    if (filtered.length === 0){
+      listArea.innerHTML = '<div class="empty"><span class="flourish">❦</span>لا توجد رسائل حتى الآن</div>';
+      return;
+    }
+
+    var html = '<div class="cards">';
+    filtered.forEach(function(item){
+      var msg = item.message && item.message.trim();
+      html += '<div class="rsvp-card">' +
+        '<div class="rsvp-card-top">' +
+          '<span class="rsvp-name">' + escapeHtml(item.name) + '</span>' +
+          '<span class="rsvp-date">' + fmtDate(item.createdAt) + '</span>' +
+        '</div>' +
+        '<div class="rsvp-message' + (msg ? '' : ' empty-msg') + '">' +
+          (msg ? escapeHtml(item.message) : 'بدون رسالة تهنئة') +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    listArea.innerHTML = html;
+  }
+
+  function loadData(){
+    listArea.innerHTML = '<div class="loading"><span class="flourish">❦</span>جارٍ التحميل...</div>';
+    return fetch('/api/rsvp', {
+      headers: { 'x-admin-password': getPassword() }
+    })
+    .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+    .then(function(result){
+      if (!result.ok){
+        clearPassword();
+        showLogin(result.data && result.data.error ? result.data.error : 'كلمة السر غير صحيحة');
+        return;
+      }
+      showDashboard();
+      render(result.data.items || []);
+    })
+    .catch(function(){
+      listArea.innerHTML = '<div class="empty">تعذر تحميل البيانات، تأكد من الاتصال وحاول تاني</div>';
+    });
+  }
+
+  function showLogin(err){
+    loginScreen.style.display = 'block';
+    dashboard.style.display = 'none';
+    loginError.textContent = err || '';
+  }
+
+  function showDashboard(){
+    loginScreen.style.display = 'none';
+    dashboard.style.display = 'block';
+  }
+
+  loginBtn.addEventListener('click', function(){
+    var pw = passwordInput.value.trim();
+    if (!pw){
+      loginError.textContent = 'اكتب كلمة السر';
+      return;
+    }
+    setPassword(pw);
+    loadData();
+  });
+
+  passwordInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') loginBtn.click();
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    clearPassword();
+    passwordInput.value = '';
+    showLogin('');
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    if (!allItems.length){ return; }
+    var rows = [['الاسم', 'الرسالة', 'التاريخ']];
+    allItems.forEach(function(i){
+      rows.push([i.name || '', i.message || '', i.createdAt || '']);
+    });
+    var csv = rows.map(function(r){
+      return r.map(function(v){
+        return '"' + String(v).replace(/"/g, '""') + '"';
+      }).join(',');
+    }).join('\n');
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'rsvp-responses.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  searchInput.addEventListener('input', applyFilter);
+
+  // لو فيه كلمة سر محفوظة في الجلسة الحالية، جرب تدخل على طول
+  if (getPassword()){
+    loadData();
+  }
+})();
+</script>
+</body>
+</html>
